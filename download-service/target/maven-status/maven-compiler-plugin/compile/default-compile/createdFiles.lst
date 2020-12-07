@@ -1,0 +1,12 @@
+io\vef\academy\download\service\services\DownloadService.class
+io\vef\academy\download\service\integration\UrlManagerListener.class
+io\vef\academy\download\service\utils\DownloadWorker.class
+io\vef\academy\download\service\utils\DownloadWorkerImpl.class
+io\vef\academy\download\service\domain\Download.class
+io\vef\academy\download\service\config\KafkaConsumerConfig.class
+io\vef\academy\download\service\config\KafkaProducerConfig.class
+io\vef\academy\download\service\repositories\DownloadRepository.class
+io\vef\academy\download\service\DownloadApplication.class
+io\vef\academy\download\service\config\DownloadWorkerConfig.class
+io\vef\academy\download\service\domain\Download$DownloadStatus.class
+io\vef\academy\download\service\services\DownloadServiceImpl.class

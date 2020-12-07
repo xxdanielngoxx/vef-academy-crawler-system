@@ -1,0 +1,26 @@
+server:
+  port: 8082
+spring:
+  datasource:
+    url: jdbc:mysql://192.168.99.100:13306/downloadservice
+    username: danielngo1998
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate.format_sql: true
+  liquibase:
+    change-log: classpath:/database/changelog/changelog_master.xml
+
+io:
+  vef:
+    academy:
+      bootstrap:
+        servers: 192.168.99.100:9092,192.168.99.100:9094,192.168.99.100:9094
+
+logging:
+  level:
+    io.vef.academy: TRACE
+    liquibase: INFO

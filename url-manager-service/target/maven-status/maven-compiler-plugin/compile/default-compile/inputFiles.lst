@@ -1,0 +1,17 @@
+D:\vef_academy\projects\project1\vef-crawler\url-manager-service\src\main\java\io\vef\academy\url\manager\service\domain\SeedDetailsId.java
+D:\vef_academy\projects\project1\vef-crawler\url-manager-service\src\main\java\io\vef\academy\url\manager\service\repositories\SeedDetailsRepository.java
+D:\vef_academy\projects\project1\vef-crawler\url-manager-service\src\main\java\io\vef\academy\url\manager\service\domain\SeedDetails.java
+D:\vef_academy\projects\project1\vef-crawler\url-manager-service\src\main\java\io\vef\academy\url\manager\service\services\UrlService.java
+D:\vef_academy\projects\project1\vef-crawler\url-manager-service\src\main\java\io\vef\academy\url\manager\service\controllers\TestController.java
+D:\vef_academy\projects\project1\vef-crawler\url-manager-service\src\main\java\io\vef\academy\url\manager\service\domain\SeedUrl.java
+D:\vef_academy\projects\project1\vef-crawler\url-manager-service\src\main\java\io\vef\academy\url\manager\service\services\UrlServiceImpl.java
+D:\vef_academy\projects\project1\vef-crawler\url-manager-service\src\main\java\io\vef\academy\url\manager\service\integration\KafkaIntegration.java
+D:\vef_academy\projects\project1\vef-crawler\url-manager-service\src\main\java\io\vef\academy\url\manager\service\integration\UrlManagerListener.java
+D:\vef_academy\projects\project1\vef-crawler\url-manager-service\src\main\java\io\vef\academy\url\manager\service\config\KafkaProducerConfig.java
+D:\vef_academy\projects\project1\vef-crawler\url-manager-service\src\main\java\io\vef\academy\url\manager\service\domain\UrlDetails.java
+D:\vef_academy\projects\project1\vef-crawler\url-manager-service\src\main\java\io\vef\academy\url\manager\service\domain\Url.java
+D:\vef_academy\projects\project1\vef-crawler\url-manager-service\src\main\java\io\vef\academy\url\manager\service\UrlManageApplication.java
+D:\vef_academy\projects\project1\vef-crawler\url-manager-service\src\main\java\io\vef\academy\url\manager\service\config\KafkaConsumerConfig.java
+D:\vef_academy\projects\project1\vef-crawler\url-manager-service\src\main\java\io\vef\academy\url\manager\service\repositories\UrlRepository.java
+D:\vef_academy\projects\project1\vef-crawler\url-manager-service\src\main\java\io\vef\academy\url\manager\service\integration\TrackingListener.java
+D:\vef_academy\projects\project1\vef-crawler\url-manager-service\src\main\java\io\vef\academy\url\manager\service\repositories\SeedUrlRepository.java

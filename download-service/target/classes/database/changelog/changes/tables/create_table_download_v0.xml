@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet id="create-table-download-v0" author="danielngo1998@gmail.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="downloads"/>
+            </not>
+        </preConditions>
+        <createTable tableName="downloads">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" unique="true" nullable="false"/>
+            </column>
+            <column name="url" type="nvarchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="task_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content" type="clob(65535 )">
+            </column>
+            <column name="status" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="failed_times" type="int">
+            </column>
+            <column name="downloading_date" type="timestamp">
+            </column>
+            <column name="downloaded_date" type="timestamp">
+            </column>
+            <column name="failed_date" type="timestamp">
+            </column>
+            <column name="version" type="int">
+            </column>
+        </createTable>
+        <addUniqueConstraint
+                tableName="downloads"
+                columnNames="url, task_id"
+        />
+    </changeSet>
+</databaseChangeLog>

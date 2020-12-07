@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="starter-service" />
+        <module name="url-manager-service" />
+        <module name="extractor-service" />
+        <module name="common" />
+        <module name="download-service" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="common" options="-parameters" />
+      <module name="download-service" options="-parameters" />
+      <module name="extractor-service" options="-parameters" />
+      <module name="starter-service" options="-parameters" />
+      <module name="url-manager-service" options="-parameters" />
+    </option>
+  </component>
+</project>
