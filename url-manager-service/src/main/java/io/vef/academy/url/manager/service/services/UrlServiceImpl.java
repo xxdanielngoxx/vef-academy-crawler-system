@@ -2,14 +2,15 @@ package io.vef.academy.url.manager.service.services;
 
 import io.vef.academy.common.events.TaskExecutedEvent;
 import io.vef.academy.common.events.UrlDispatchedEvent;
+import io.vef.academy.common.events.UrlDownloadFailedEvent;
+import io.vef.academy.common.events.UrlDownloadSucceedEvent;
 import io.vef.academy.url.manager.service.domain.*;
-import io.vef.academy.url.manager.service.repositories.SeedUrlRepository;
 import io.vef.academy.url.manager.service.repositories.UrlRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.util.Pair;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import seed.SeedUrl;
 import topics.UrlManagerTopic;
 
 import java.util.Optional;
@@ -20,92 +21,106 @@ public class UrlServiceImpl implements UrlService {
 
     private final UrlRepository urlRepository;
 
-    private final SeedUrlRepository seedUrlRepository;
-
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public UrlServiceImpl(
             UrlRepository urlRepository,
-            SeedUrlRepository seedUrlRepository,
             KafkaTemplate<String, Object> kafkaTemplate
     ) {
         this.urlRepository = urlRepository;
-        this.seedUrlRepository = seedUrlRepository;
         this.kafkaTemplate = kafkaTemplate;
     }
 
     @Override
-    @Transactional
-    public Url handleUrlDispatched(UrlDispatchedEvent urlDispatchedEvent) {
-       return null;
+    public void handleTaskExecuted(TaskExecutedEvent event) {
+        for (SeedUrl seedUrl : event.getSeedUrlList()) {
+            this.dispatchUrl(seedUrl.getUrl(), event.getTaskId(), seedUrl.getId());
+        }
     }
 
     @Override
-    public void handleTaskExecuted(TaskExecutedEvent taskExecutedEvent) {
-        taskExecutedEvent.getSeedUrlList()
-                .stream()
-                .forEach(seedUrl -> {
-                        SeedUrl persistedSeedUrl = this.saveSeedUrl(seedUrl.getId(), seedUrl.getUrl());
-                        this.dispatchUrl(seedUrl.getUrl(), persistedSeedUrl, taskExecutedEvent.getTaskId());
+    public Optional<UrlDownloadDetails> handleDownloadSucceed(UrlDownloadSucceedEvent event) {
+        Url url = this.getUrlById(event.getUrl());
+
+        Optional<UrlDownloadDetails> optionalUrlDownloadDetails = url
+                .markUrlDownloadDetailsAsDownloaded(event.getTaskId(), event.getId());
+
+        boolean isModified = optionalUrlDownloadDetails.isPresent();
+
+        if (isModified) {
+            Url persistedUrl = this.urlRepository.save(url);
+            log.info("Persisted Url: {}", persistedUrl);
+            return optionalUrlDownloadDetails;
+        }
+
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<UrlDownloadDetails> handleDownloadFailedEvent(UrlDownloadFailedEvent event) {
+        Url url = this.getUrlById(event.getUrl());
+
+
+        Optional<UrlDownloadDetails> optionalUrlDownloadDetails = url
+                .markUrlDownloadDetailsAsFailed(event.getTaskId());
+
+        boolean isModified = optionalUrlDownloadDetails.isPresent();
+
+        if (isModified) {
+            Url persistedUrl = this.urlRepository.save(url);
+            log.info("Persisted Url: {}", persistedUrl);
+            return optionalUrlDownloadDetails;
+        }
+
+        return Optional.empty();
+    }
+
+    @Override
+    public Url getUrlById(String id) {
+        return this.urlRepository
+                .findById(id)
+                .orElseThrow(() -> {
+                    log.error("Url not found: {}", id);
+                    return new RuntimeException("Url not found: " + id);
                 });
     }
 
-    private void dispatchUrl(String url, SeedUrl seedUrl, String taskId) {
-        Optional<?> optionalUrlDetailsId = this.urlRepository.findByUrl(url)
-                .map(existedUrl -> {
-                    return this.processSavingDispatch(existedUrl, seedUrl, taskId);
-                })
-                .orElseGet(() -> {
-                    Url newUrl = Url.newUrl(url, seedUrl);
-                    return this.processSavingDispatch(newUrl, seedUrl, taskId);
-                });
-        optionalUrlDetailsId.ifPresent(urlDetailsId -> {
-            this.kafkaTemplate.send(
-                    UrlManagerTopic.URLS,
-                    url,
-                    UrlDispatchedEvent.of(
-                            (String) urlDetailsId,
-                            url,
-                            new seed.SeedUrl(seedUrl.getId(), seedUrl.getUrl()),
-                            taskId
-                    )
-            );
-        });
-    }
-
     @Transactional
-    private SeedUrl saveSeedUrl(String id, String url) {
-        Optional<SeedUrl> optionalSeedUrl = this.seedUrlRepository.findById(id);
-        return optionalSeedUrl.orElseGet(() -> this.seedUrlRepository.save(SeedUrl.of(id, url)));
-    }
+    private Optional<Url> dispatchUrl(String url, String taskId, String seedId) {
+        log.debug("Input: {url: {}, taskId: {}, seedid: {}}", url, taskId, seedId);
+        Optional<Url> optionalUrl = this.urlRepository
+                .findById(url);
 
-    @Transactional
-    private Optional<Pair<UrlDetails, Url>> addUrlDetails(Url url, String taskId) {
-        Optional<UrlDetails> optionalUrlDetails = url.addUrlDetails(taskId);
-        if (optionalUrlDetails.isPresent()) {
-            Url persistedUrl = this.urlRepository.save(url);
-            return Optional.of(Pair.of(optionalUrlDetails.get(), persistedUrl));
+        if (optionalUrl.isPresent()) {
+            return this.dispatchExistedUrl(optionalUrl.get(), taskId, seedId);
         }
+        return this.dispatchNewUrl(url, taskId, seedId);
+    }
+
+
+    private Optional<Url> dispatchExistedUrl(Url existedUrl, String taskId, String seedId) {
+        Optional<UrlDownloadDetails> optionalUrlDownloadDetails = existedUrl.addUrlDownloadDetails(taskId, seedId);
+        if (optionalUrlDownloadDetails.isPresent()) {
+            Url persistedUrl = this.urlRepository.save(existedUrl);
+            log.info("Persisted Url: {}", persistedUrl);
+            this.publishEventUrlDispatched(existedUrl.getUrl(),taskId);
+            return Optional.of(persistedUrl);
+        }
+        log.info("Url Already Dispatched, {url: {}, taskId: {}, seedId: {}}", existedUrl.getUrl(), taskId, seedId);
         return Optional.empty();
     }
 
-    @Transactional
-    private Optional<Pair<SeedDetails, Url>> addSeedUrl(Url url, SeedUrl seedUrl) {
-        Optional<SeedDetails> addSeedUrlResult = url.addSeedUrl(seedUrl);
-        if (addSeedUrlResult.isPresent()) {
-            Url persistedUrl = this.urlRepository.save(url);
-            return Optional.of(Pair.of(addSeedUrlResult.get(), persistedUrl));
-        }
-        return Optional.empty();
+    private Optional<Url> dispatchNewUrl(String url, String taskId, String seedId) {
+        Url urlEntity = Url.newUrl(url, taskId, seedId);
+        Url persistedUrl = this.urlRepository.save(urlEntity);
+        log.info("Persisted Url: {}", persistedUrl);
+        this.publishEventUrlDispatched(persistedUrl.getUrl(), taskId);
+        return Optional.of(persistedUrl);
     }
 
-    @Transactional
-    private Optional<String> processSavingDispatch(Url url, SeedUrl seedUrl, String taskId) {
-        Optional<Pair<UrlDetails, Url>> addUrlDetailsResult = this.addUrlDetails(url, taskId);
-        if (addUrlDetailsResult.isPresent()) {
-            this.addSeedUrl(url, seedUrl);
-            return Optional.of(addUrlDetailsResult.get().getFirst().getId());
-        }
-        return Optional.empty();
+    private void publishEventUrlDispatched(String url, String taskId) {
+        UrlDispatchedEvent event = UrlDispatchedEvent.of(url, taskId);
+        this.kafkaTemplate.send(UrlManagerTopic.URLS, url, event);
+        log.info("Published event Url Dispatched: {}", UrlDispatchedEvent.of(url, taskId));
     }
 }

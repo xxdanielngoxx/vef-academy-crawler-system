@@ -5,11 +5,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.io.Serializable;
+
 @Getter
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class ContentDownloadFailedEvent {
+public class UrlDownloadSucceedEvent implements Serializable {
+
+    private static final long serialVersionUID = 4214511906973927228L;
 
     private static final String FROM = "DOWNLOAD-SERVICE";
 
@@ -19,19 +23,16 @@ public class ContentDownloadFailedEvent {
 
     private String taskId;
 
-    private int failedTimes;
-
     private Metadata metadata;
 
-    private ContentDownloadFailedEvent(String id, String url, String taskId, int failedTimes) {
+    private UrlDownloadSucceedEvent(String id, String url, String taskId) {
         this.id = id;
         this.url = url;
         this.taskId = taskId;
-        this.failedTimes = failedTimes;
         this.metadata = Metadata.of(FROM);
     }
 
-    public static ContentDownloadFailedEvent of(String id, String url, String taskId, int failedTimes) {
-        return new ContentDownloadFailedEvent(id, url, taskId, failedTimes);
+    public static UrlDownloadSucceedEvent of(String id, String url, String taskId) {
+        return new UrlDownloadSucceedEvent(id, url, taskId);
     }
 }

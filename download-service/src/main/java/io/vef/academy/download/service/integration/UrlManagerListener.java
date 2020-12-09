@@ -30,6 +30,7 @@ public class UrlManagerListener {
         acknowledgment.acknowledge();
     }
 
+    @KafkaHandler
     public void on(Object object, Acknowledgment acknowledgment) {
         log.info("Received Message: {}", object);
         acknowledgment.acknowledge();

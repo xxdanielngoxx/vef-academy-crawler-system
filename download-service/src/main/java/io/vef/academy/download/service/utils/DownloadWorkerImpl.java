@@ -1,7 +1,7 @@
 package io.vef.academy.download.service.utils;
 
-import io.vef.academy.common.events.ContentDownloadFailedEvent;
-import io.vef.academy.common.events.ContentDownloadedEvent;
+import io.vef.academy.common.events.UrlDownloadFailedEvent;
+import io.vef.academy.common.events.UrlDownloadSucceedEvent;
 import io.vef.academy.download.service.domain.Download;
 import io.vef.academy.download.service.repositories.DownloadRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +38,7 @@ public class DownloadWorkerImpl implements DownloadWorker {
     public CompletableFuture downloadContent(String id, String url, String taskId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Document document = Jsoup.connect(url).get();
+                Document document = Jsoup.connect(url).timeout(5000).get();
                 String content = document.body().html();
                 return Optional.of(content);
             } catch (IOException e) {
@@ -71,7 +71,7 @@ public class DownloadWorkerImpl implements DownloadWorker {
             this.kafkaTemplate.send(
                     DownloadServiceTopic.DOWNLOADS,
                     url,
-                    ContentDownloadedEvent.of(id, url, taskId)
+                    UrlDownloadSucceedEvent.of(id, url, taskId)
             );
             return updatedDownload;
         }
@@ -88,7 +88,7 @@ public class DownloadWorkerImpl implements DownloadWorker {
             this.kafkaTemplate.send(
                     DownloadServiceTopic.DOWNLOADS,
                     url,
-                    ContentDownloadFailedEvent.of(id, url, taskId, updatedDownload.getFailedTimes())
+                    UrlDownloadFailedEvent.of(id, url, taskId, updatedDownload.getFailedTimes())
             );
             return updatedDownload;
         }

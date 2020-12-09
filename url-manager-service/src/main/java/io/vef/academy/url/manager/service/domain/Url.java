@@ -2,14 +2,19 @@ package io.vef.academy.url.manager.service.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
+@Slf4j
+@Getter
 @Entity
 @Table(name = "urls")
 @Access(AccessType.FIELD)
@@ -20,28 +25,19 @@ public class Url implements Serializable {
 
     private static final long serialVersionUID = 5512731081269678865L;
 
-    private Url(String url, SeedUrl seedUrl) {
+    private Url(String url) {
         this.url = url;
         this.dispatchedDate = LocalDateTime.now();
-        this.urlDetailsList = new LinkedList<>();
-        this.seedDetailsList = new LinkedList<>();
     }
 
-    public static Url newUrl(String url, SeedUrl seedUrl) {
-        Url newUrl = new Url(url, seedUrl);
-        newUrl.addSeedUrl(seedUrl);
+    public static Url newUrl(String url, String taskId, String seedId) {
+        Url newUrl = new Url(url);
+        newUrl.addUrlDownloadDetails(taskId, seedId);
         return newUrl;
     }
 
     @Id
     private String url;
-
-    @OneToMany(
-            mappedBy = "url",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
-    private List<SeedDetails> seedDetailsList;
 
     @Column(name = "dispatched_date")
     private LocalDateTime dispatchedDate;
@@ -54,63 +50,94 @@ public class Url implements Serializable {
             orphanRemoval = true
     )
     @MapKey(name = "url")
-    private List<UrlDetails> urlDetailsList;
+    private List<UrlDownloadDetails> urlDownloadDetailsList = new LinkedList<>();
 
-    public Optional<UrlDetails> addUrlDetails(String taskId) {
-        if (isExecutedInTheSameTask(taskId)) {
-            return Optional.empty();
+    @Version
+    private int version;
+
+    public Optional<UrlDownloadDetails> addUrlDownloadDetails(String taskId, String seedId) {
+        Optional<UrlDownloadDetails> targetDownloadDetails = this.findUrlDownloadDetailsByTaskId(taskId);
+
+        if (targetDownloadDetails.isPresent()) {
+            return this.addExtractDetailsInExistedDownloadDetails(targetDownloadDetails.get(), seedId);
         }
-        UrlDetails newDetails = UrlDetails.newDetails(this, taskId);
-        this.urlDetailsList.add(newDetails);
-        this.dispatchedDate = LocalDateTime.now();
-        return Optional.of(newDetails);
+        return Optional.of(this.addNewDownloadDetails(taskId, seedId));
     }
 
-    public String getUrl() {
-        return url;
-    }
+    public Optional<UrlDownloadDetails> markUrlDownloadDetailsAsDownloaded(String taskId, String downloadId) {
+        UrlDownloadDetails targetDownloadDetails = this.getUrlDownloadDetailsByTaskId(taskId);
 
-    public List<SeedDetails> getSeedDetails() {
-        return Collections.unmodifiableList(this.seedDetailsList);
-    }
-
-    public LocalDateTime getDispatchedDate() {
-        return dispatchedDate;
-    }
-
-    public List<UrlDetails> getUrlDetailsList() {
-        return Collections.unmodifiableList(this.urlDetailsList);
-    }
-
-    private boolean isExecutedInTheSameTask(String taskId) {
-        return this.urlDetailsList.stream().anyMatch(urlDetails -> urlDetails.getTaskId().equals(taskId));
-    }
-
-    public Optional<SeedDetails> addSeedUrl(SeedUrl seedUrl) {
-        for (SeedDetails seedDetails: seedDetailsList) {
-            if (seedDetails.getUrl().equals(this) && seedDetails.getSeedUrl().equals(seedUrl)) {
-                return Optional.empty();
-            }
+        if (targetDownloadDetails.getStatus() == UrlDownloadDetails.ProcessStatus.DISPATCHED) {
+            UrlDownloadDetails downloadedDetails = targetDownloadDetails.markAsDownloaded(downloadId);
+            return Optional.of(downloadedDetails);
         }
-        SeedDetails newSeedDetails = SeedDetails.of(this, seedUrl);
-        this.seedDetailsList.add(newSeedDetails);
-        seedUrl.addUrl(newSeedDetails);
-        return Optional.of(newSeedDetails);
+        return Optional.empty();
     }
 
-    public Optional<List<SeedDetails>> removeSeedUrl(SeedUrl seedUrl) {
+    public Optional<UrlDownloadDetails> markUrlDownloadDetailsAsFailed(String taskId) {
+        UrlDownloadDetails targetDownloadDetails = this.getUrlDownloadDetailsByTaskId(taskId);
 
-        List<SeedDetails> removedList = new ArrayList<>();
-
-        for (SeedDetails seedDetails: seedDetailsList) {
-            if (seedDetails.getUrl().equals(this) && seedDetails.getSeedUrl().equals(seedUrl)) {
-                this.seedDetailsList.remove(seedDetails);
-                seedUrl.removeUrl(seedDetails);
-                seedDetails.clear();
-                removedList.add(seedDetails);
-            }
+        if (targetDownloadDetails.getStatus() == UrlDownloadDetails.ProcessStatus.DISPATCHED) {
+            UrlDownloadDetails downloadFailed = targetDownloadDetails.markAsDownloadFailed();
+            return Optional.of(downloadFailed);
         }
-        return removedList.isEmpty() ? Optional.empty() : Optional.of(removedList);
+
+        return Optional.empty();
+    }
+
+    public Optional<UrlDownloadDetails> findUrlDownloadDetailsByTaskId(String taskId) {
+        return urlDownloadDetailsList
+                .stream()
+                .filter(urlDownloadDetails -> urlDownloadDetails.getId().equals(UrlDownloadDetailsId.of(url, taskId)))
+                .findFirst();
+    }
+
+    private UrlDownloadDetails getUrlDownloadDetailsByTaskId(String taskId) {
+        return this.findUrlDownloadDetailsByTaskId(taskId)
+                .orElseThrow(() -> {
+                    log.error("{url: {}, taskId: {}} not found", url, taskId);
+                    return new RuntimeException("{url: " + url + ", taskId: " + taskId + "} not found");
+                });
+    }
+
+    private Optional<UrlDownloadDetails> addExtractDetailsInExistedDownloadDetails(
+            UrlDownloadDetails existedDownloadDetails,
+            String seedId
+    ) {
+        Optional<UrlExtractDetails> optionalNewExtractDetails = existedDownloadDetails.addUrlExtractDetails(seedId);
+        if (optionalNewExtractDetails.isPresent()) {
+            log.info(
+                    "Added new Extract Details: {} in existed Download Details: {}",
+                    optionalNewExtractDetails.get(),
+                    existedDownloadDetails
+            );
+            return Optional.of(existedDownloadDetails);
+        }
+        log.info("Extract Details of Download Details: {}, already existed", existedDownloadDetails);
+        return Optional.empty();
+    }
+
+    private UrlDownloadDetails addNewDownloadDetails(String taskId, String seedId) {
+        UrlDownloadDetails newDownloadDetails = UrlDownloadDetails.newDetails(this, taskId, seedId);
+        urlDownloadDetailsList.add(newDownloadDetails);
+        log.info("Added new Download Details: {}", newDownloadDetails);
+        return newDownloadDetails;
+    }
+
+    public Set<String> getAllSeedId() {
+        return urlDownloadDetailsList
+                .stream()
+                .flatMap(
+                        urlDownloadDetails -> urlDownloadDetails
+                                .getUrlExtractDetailsList()
+                                .stream()
+                                .map(urlExtractDetails -> urlExtractDetails.getId().getSeedId())
+                )
+                .collect(Collectors.toSet());
+    }
+
+    public List<UrlDownloadDetails> getUrlDownloadDetailsList() {
+        return Collections.unmodifiableList(this.urlDownloadDetailsList);
     }
 
     @Override

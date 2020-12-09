@@ -7,37 +7,35 @@
     <changeSet id="create-table-url-details" author="danielngo1998@gmail.com">
         <preConditions>
             <not>
-                <tableExists tableName="url_details"/>
+                <tableExists tableName="url_download_details"/>
             </not>
         </preConditions>
-        <createTable tableName="url_details">
-            <column name="id" type="uuid">
-                <constraints primaryKey="true" nullable="false" unique="true"/>
-            </column>
+        <createTable tableName="url_download_details">
             <column name="url" type="nvarchar(255)">
-                <constraints nullable="false"/>
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_url_download_details"/>
             </column>
             <column name="task_id" type="uuid">
-                <constraints nullable="false"/>
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_url_download_details"/>
+            </column>
+            <column name="downloaded_id" type="uuid">
+                <constraints unique="true"/>
             </column>
             <column name="status" type="nvarchar(50)">
                 <constraints nullable="false"/>
-            </column>
-            <column name="content_id" type="uuid">
             </column>
             <column name="dispatched_date" type="timestamp">
             </column>
             <column name="downloaded_date" type="timestamp">
             </column>
-            <column name="extracted_date" type="timestamp">
-            </column>
             <column name="failed_date" type="timestamp">
+            </column>
+            <column name="version" type="int">
             </column>
         </createTable>
         <addForeignKeyConstraint
-                baseTableName="url_details"
+                baseTableName="url_download_details"
                 baseColumnNames="url"
-                constraintName="fk_url_details_url"
+                constraintName="fk_url_download_details_url"
                 referencedTableName="urls"
                 referencedColumnNames="url"
         />

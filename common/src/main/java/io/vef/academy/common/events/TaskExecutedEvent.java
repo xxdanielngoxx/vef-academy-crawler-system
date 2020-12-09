@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import seed.SeedUrl;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
@@ -13,7 +14,9 @@ import java.util.List;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class TaskExecutedEvent {
+public class TaskExecutedEvent implements Serializable {
+
+    private static final long serialVersionUID = -5126942079363310600L;
 
     private static final String FROM = "TRACKING-SERVICE";
 

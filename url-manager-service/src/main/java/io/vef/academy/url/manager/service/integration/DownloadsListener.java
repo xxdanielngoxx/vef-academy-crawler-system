@@ -1,33 +1,38 @@
 package io.vef.academy.url.manager.service.integration;
 
-import io.vef.academy.common.events.TaskExecutedEvent;
+import io.vef.academy.common.events.UrlDownloadFailedEvent;
+import io.vef.academy.common.events.UrlDownloadSucceedEvent;
 import io.vef.academy.url.manager.service.services.UrlService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
-import topics.TrackingTopic;
+import topics.DownloadServiceTopic;
 
 @Slf4j
 @Component
 @KafkaListener(
-        id = "url-manager-tracking-listener",
-        topics = TrackingTopic.TRACKING,
-        containerFactory = "trackingKafkaListenerContainerFactory"
+        id = "url-manager-downloads-listener",
+        topics = DownloadServiceTopic.DOWNLOADS,
+        containerFactory = "downloadsKafkaListenerContainerFactory"
 )
-public class TrackingListener {
+public class DownloadsListener {
 
     private final UrlService urlService;
 
-    public TrackingListener(UrlService urlService) {
+    public DownloadsListener(UrlService urlService) {
         this.urlService = urlService;
     }
 
     @KafkaHandler
-    public void on(TaskExecutedEvent taskExecutedEvent, Acknowledgment acknowledgment) {
-        log.info("TaskExecuted event: {}", taskExecutedEvent.toString());
-        this.urlService.handleTaskExecuted(taskExecutedEvent);
+    public void on(UrlDownloadSucceedEvent event, Acknowledgment acknowledgment) {
+        this.urlService.handleDownloadSucceed(event);
+        acknowledgment.acknowledge();
+    }
+
+    public void on(UrlDownloadFailedEvent event, Acknowledgment acknowledgment) {
+        this.urlService.handleDownloadFailedEvent(event);
         acknowledgment.acknowledge();
     }
 

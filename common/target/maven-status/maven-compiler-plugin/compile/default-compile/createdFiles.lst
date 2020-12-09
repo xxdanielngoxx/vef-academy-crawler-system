@@ -1,10 +1,10 @@
 topics\UrlManagerTopic.class
 io\vef\academy\common\events\UrlDispatchedEvent.class
 topics\DownloadServiceTopic.class
-io\vef\academy\common\events\ContentDownloadFailedEvent.class
 io\vef\academy\common\events\UrlDownloadedEvent.class
 topics\TrackingTopic.class
+io\vef\academy\common\events\UrlDownloadSucceedEvent.class
 seed\SeedUrl.class
-io\vef\academy\common\events\ContentDownloadedEvent.class
 io\vef\academy\common\events\TaskExecutedEvent.class
 io\vef\academy\common\events\Metadata.class
+io\vef\academy\common\events\UrlDownloadFailedEvent.class

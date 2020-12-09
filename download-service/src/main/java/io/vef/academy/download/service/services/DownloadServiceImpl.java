@@ -23,11 +23,6 @@ public class DownloadServiceImpl implements DownloadService{
     }
 
     @Override
-    public Optional<Download> getDownloadById(String id) {
-        return this.downloadRepository.findById(id);
-    }
-
-    @Override
     public Optional<Download> getDownloadByUrlAndTaskId(String url, String taskId) {
         return this.downloadRepository.findByUrlAndTaskId(url, taskId);
     }

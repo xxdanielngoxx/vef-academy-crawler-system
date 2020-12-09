@@ -16,6 +16,8 @@
             </column>
             <column name="dispatched_date" type="timestamp">
             </column>
+            <column name="version" type="int">
+            </column>
         </createTable>
     </changeSet>
 </databaseChangeLog>

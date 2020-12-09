@@ -5,7 +5,6 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
     <include file="/database/changelog/changes/tables/create_table_urls_v0.xml"/>
-    <include file="/database/changelog/changes/tables/create_table_url_details_v0.xml"/>
-    <include file="/database/changelog/changes/tables/create_table_seed_urls_v0.xml"/>
-    <include file="/database/changelog/changes/tables/create_table_seed_details_v0.xml"/>
+    <include file="/database/changelog/changes/tables/create_table_url_download_details_v0.xml"/>
+    <include file="/database/changelog/changes/tables/create_table_url_extract_details_v0.xml"/>
 </databaseChangeLog>

@@ -51,6 +51,11 @@ public class KafkaConsumerConfig {
         return this.generateKafkaListenerContainerFactory();
     }
 
+    @Bean(name = "downloadsKafkaListenerContainerFactory")
+    public ConcurrentKafkaListenerContainerFactory<String, Object> downloadsKafkaListenerContainerFactory() {
+        return this.generateKafkaListenerContainerFactory();
+    }
+
     private ConcurrentKafkaListenerContainerFactory<String, Object> generateKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, Object> containerFactory = new ConcurrentKafkaListenerContainerFactory<>();
         containerFactory.setConsumerFactory(consumerFactory());

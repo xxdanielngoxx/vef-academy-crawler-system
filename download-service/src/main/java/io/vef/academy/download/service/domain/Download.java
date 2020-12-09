@@ -4,9 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -17,7 +17,9 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Download {
+public class Download implements Serializable {
+
+    private static final long serialVersionUID = -325451201291200751L;
 
     public static Download newDownload(String url, String taskId) {
         return new Download(url, taskId);
@@ -34,7 +36,6 @@ public class Download {
     @Id
     private String id;
 
-    @NaturalId
     private String url;
 
     @Column(name = "task_id")

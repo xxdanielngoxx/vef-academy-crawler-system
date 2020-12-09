@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet id="create-table-url-details" author="danielngo1998@gmail.com">
+        <preConditions>
+            <not>
+                <tableExists tableName="url_extract_details"/>
+            </not>
+        </preConditions>
+        <createTable tableName="url_extract_details">
+            <column name="url" type="nvarchar(255)">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_url_extract_details"/>
+            </column>
+            <column name="task_id" type="uuid">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_url_extract_details"/>
+            </column>
+            <column name="seed_id" type="uuid">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_url_extract_details"/>
+            </column>
+            <column name="extracted_id" type="uuid">
+                <constraints unique="true"/>
+            </column>
+            <column name="status" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="extracted_date" type="timestamp">
+            </column>
+            <column name="failed_date" type="timestamp">
+            </column>
+            <column name="version" type="int">
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+                baseTableName="url_extract_details"
+                baseColumnNames="url, task_id"
+                constraintName="fk_url_extract_details_url_download_details"
+                referencedTableName="url_download_details"
+                referencedColumnNames="url, task_id"
+        />
+    </changeSet>
+</databaseChangeLog>
