@@ -35,7 +35,7 @@ public class UrlDownloadDetails implements Serializable {
     }
 
     public static UrlDownloadDetails newDetails(Url url, String taskId, String seedId) {
-        UrlDownloadDetails newUrlDownloadDetails = new  UrlDownloadDetails(url, taskId);
+        UrlDownloadDetails newUrlDownloadDetails = new UrlDownloadDetails(url, taskId);
         newUrlDownloadDetails.addUrlExtractDetails(seedId);
         return newUrlDownloadDetails;
     }
@@ -55,9 +55,11 @@ public class UrlDownloadDetails implements Serializable {
     @Column(name = "downloaded_id")
     private String downloadedId;
 
+    @JsonIgnore
     @MapKey(name = "id")
     @OneToMany(
             mappedBy = "urlDownloadDetails",
+            fetch = FetchType.EAGER,
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
@@ -77,8 +79,8 @@ public class UrlDownloadDetails implements Serializable {
 
     public Optional<UrlExtractDetails> addUrlExtractDetails(String seedId) {
         if (status == ProcessStatus.DOWNLOAD_FAILED) {
-            log.error("Can not url {} because download failed", id.getUrl());
-            throw new IllegalStateException("Can not url " + id.getUrl() + " because download failed" );
+            log.error("Can not add extract details url {} because download failed", id.getUrl());
+            throw new IllegalStateException("Can not add extract details url " + id.getUrl() + " because download failed");
         }
 
         Optional<UrlExtractDetails> optionalUrlExtractDetails = this.findUrlExtractDetailsBySeedId(seedId);
@@ -93,27 +95,35 @@ public class UrlDownloadDetails implements Serializable {
         return Optional.of(newUrlExtractDetails);
     }
 
-    public UrlDownloadDetails markAsDownloaded(String downloadedId) {
-        if (this.status != ProcessStatus.DISPATCHED) {
-            log.error("Previous state must be: {}", ProcessStatus.DISPATCHED);
-            throw new IllegalStateException("Previous state must be " + ProcessStatus.DISPATCHED);
+    public Optional<UrlDownloadDetails> markAsDownloaded(String downloadedId) {
+        if (this.status == ProcessStatus.DISPATCHED || this.status == ProcessStatus.RETRIED) {
+            this.status = ProcessStatus.DOWNLOADED;
+            this.downloadedId = downloadedId;
+            this.downloadedDate = LocalDateTime.now();
+            this.markUrlExtractDetailsAsExtracting();
+            return Optional.of(this);
         }
-        this.status = ProcessStatus.DOWNLOADED;
-        this.downloadedId = downloadedId;
-        this.downloadedDate = LocalDateTime.now();
-        this.markUrlExtractDetailsAsExtracting();
-        return this;
+        log.error("Previous state must be: {} or {}", ProcessStatus.DISPATCHED, ProcessStatus.RETRIED);
+        return Optional.empty();
     }
 
-    public UrlDownloadDetails markAsDownloadFailed() {
-        if (status != ProcessStatus.DISPATCHED) {
-            log.error("Previous state must be: {}", ProcessStatus.DISPATCHED);
-            throw new IllegalStateException("Previous state must be " + ProcessStatus.DISPATCHED);
+    public Optional<UrlDownloadDetails> markAsDownloadFailed() {
+        if (this.status == ProcessStatus.DISPATCHED || this.status == ProcessStatus.RETRIED) {
+            this.status = ProcessStatus.DOWNLOAD_FAILED;
+            this.failedDate = LocalDateTime.now();
+            this.markUrlExtractDetailsAsFailed();
+            return Optional.of(this);
         }
-        this.status = ProcessStatus.DOWNLOAD_FAILED;
-        this.failedDate = LocalDateTime.now();
-        this.markUrlExtractDetailsAsFailed();
-        return this;
+        log.error("Previous state must be: {}  or {}", ProcessStatus.DISPATCHED, ProcessStatus.RETRIED);
+        return Optional.empty();
+    }
+
+    public Optional<UrlDownloadDetails> markAsRetrying() {
+        if (status == ProcessStatus.DISPATCHED) {
+            this.status = ProcessStatus.RETRIED;
+            return Optional.of(this);
+        }
+        return Optional.empty();
     }
 
     public List<UrlExtractDetails> getUrlExtractDetailsList() {
@@ -128,7 +138,7 @@ public class UrlDownloadDetails implements Serializable {
     }
 
     private UrlDownloadDetails markUrlExtractDetailsAsFailed() {
-        for (UrlExtractDetails extractDetails: urlExtractDetailsList) {
+        for (UrlExtractDetails extractDetails : urlExtractDetailsList) {
             extractDetails.markAsFailed();
         }
         return this;
@@ -144,6 +154,7 @@ public class UrlDownloadDetails implements Serializable {
     public enum ProcessStatus {
         DISPATCHED,
         DOWNLOADED,
+        RETRIED,
         DOWNLOAD_FAILED
     }
 

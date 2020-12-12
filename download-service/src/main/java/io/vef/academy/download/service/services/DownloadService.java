@@ -7,6 +7,8 @@ import java.util.Optional;
 
 @Service
 public interface DownloadService {
+    Download getDownloadById(String id);
     Optional<Download> getDownloadByUrlAndTaskId(String url, String taskId);
     Optional<Download> downloadUrl(String url, String taskId);
+    Optional<Download> retryDownloadUrl(String id);
 }

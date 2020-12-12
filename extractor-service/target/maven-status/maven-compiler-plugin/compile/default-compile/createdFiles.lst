@@ -1,0 +1,15 @@
+io\vef\academy\extractor\service\domain\SubLink.class
+io\vef\academy\extractor\service\domain\SeedInfo.class
+io\vef\academy\extractor\service\domain\TargetUrl.class
+io\vef\academy\extractor\service\domain\TargetUrl$RootUrlStatus.class
+io\vef\academy\extractor\service\ExtractorApplication.class
+io\vef\academy\extractor\service\domain\ExtractedResult.class
+io\vef\academy\extractor\service\domain\Extracted.class
+io\vef\academy\extractor\service\services\TargetUrlServiceImpl.class
+io\vef\academy\extractor\service\services\TargetUrlService.class
+io\vef\academy\extractor\service\config\KafkaProducerConfig.class
+io\vef\academy\extractor\service\config\KafkaConsumerConfig.class
+io\vef\academy\extractor\service\integration\UrlManagerListener.class
+io\vef\academy\extractor\service\domain\SubLink$SubLinkStatus.class
+io\vef\academy\extractor\service\domain\ExtractedValue.class
+io\vef\academy\extractor\service\repositories\TargetUrlRepository.class

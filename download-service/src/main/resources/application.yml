@@ -18,7 +18,7 @@ io:
   vef:
     academy:
       bootstrap:
-        servers: 192.168.99.100:9092,192.168.99.100:9094,192.168.99.100:9094
+        servers: 192.168.99.100:9092
 
 logging:
   level:

@@ -11,8 +11,8 @@ import java.util.Optional;
 
 @Service
 public interface UrlService {
+    Url getUrlById(String id);
     void handleTaskExecuted(TaskExecutedEvent event);
     Optional<UrlDownloadDetails> handleDownloadSucceed(UrlDownloadSucceedEvent event);
     Optional<UrlDownloadDetails> handleDownloadFailedEvent(UrlDownloadFailedEvent event);
-    Url getUrlById(String id);
 }

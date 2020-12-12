@@ -1,6 +1,5 @@
 package io.vef.academy.url.manager.service.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,10 +41,9 @@ public class Url implements Serializable {
     @Column(name = "dispatched_date")
     private LocalDateTime dispatchedDate;
 
-    @JsonIgnore
     @OneToMany(
             mappedBy = "url",
-            fetch = FetchType.LAZY,
+            fetch = FetchType.EAGER,
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
@@ -61,28 +59,24 @@ public class Url implements Serializable {
         if (targetDownloadDetails.isPresent()) {
             return this.addExtractDetailsInExistedDownloadDetails(targetDownloadDetails.get(), seedId);
         }
+
         return Optional.of(this.addNewDownloadDetails(taskId, seedId));
     }
 
     public Optional<UrlDownloadDetails> markUrlDownloadDetailsAsDownloaded(String taskId, String downloadId) {
         UrlDownloadDetails targetDownloadDetails = this.getUrlDownloadDetailsByTaskId(taskId);
+        return targetDownloadDetails.markAsDownloaded(downloadId);
+    }
 
-        if (targetDownloadDetails.getStatus() == UrlDownloadDetails.ProcessStatus.DISPATCHED) {
-            UrlDownloadDetails downloadedDetails = targetDownloadDetails.markAsDownloaded(downloadId);
-            return Optional.of(downloadedDetails);
-        }
-        return Optional.empty();
+    public Optional<UrlDownloadDetails> markUrlDownloadDetailsAsRetrying(String taskId) {
+        UrlDownloadDetails targetDownloadDetails = this.getUrlDownloadDetailsByTaskId(taskId);
+        targetDownloadDetails.markAsRetrying();
+        return Optional.of(targetDownloadDetails);
     }
 
     public Optional<UrlDownloadDetails> markUrlDownloadDetailsAsFailed(String taskId) {
         UrlDownloadDetails targetDownloadDetails = this.getUrlDownloadDetailsByTaskId(taskId);
-
-        if (targetDownloadDetails.getStatus() == UrlDownloadDetails.ProcessStatus.DISPATCHED) {
-            UrlDownloadDetails downloadFailed = targetDownloadDetails.markAsDownloadFailed();
-            return Optional.of(downloadFailed);
-        }
-
-        return Optional.empty();
+        return targetDownloadDetails.markAsDownloadFailed();
     }
 
     public Optional<UrlDownloadDetails> findUrlDownloadDetailsByTaskId(String taskId) {
@@ -124,15 +118,11 @@ public class Url implements Serializable {
         return newDownloadDetails;
     }
 
-    public Set<String> getAllSeedId() {
-        return urlDownloadDetailsList
+    public Set<String> getAllSeedId(String taskId) {
+        return this.getUrlDownloadDetailsByTaskId(taskId)
+                .getUrlExtractDetailsList()
                 .stream()
-                .flatMap(
-                        urlDownloadDetails -> urlDownloadDetails
-                                .getUrlExtractDetailsList()
-                                .stream()
-                                .map(urlExtractDetails -> urlExtractDetails.getId().getSeedId())
-                )
+                .map(urlExtractDetails -> urlExtractDetails.getId().getSeedId())
                 .collect(Collectors.toSet());
     }
 

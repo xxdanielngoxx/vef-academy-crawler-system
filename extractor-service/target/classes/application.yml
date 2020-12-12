@@ -1,8 +1,15 @@
+server:
+  port: 8083
+spring:
+  data:
+    mongodb:
+      uri: mongodb+srv://danielngo1998:Ngodinhloc261571838@cluster0.lwlpy.mongodb.net/extractions?retryWrites=true&w=majority
+      database: extractions
 io:
   vef:
     academy:
       bootstrap:
-        server: 192.168.99.100:9092
+        servers: 192.168.99.100:9092
 
 logging:
   level:

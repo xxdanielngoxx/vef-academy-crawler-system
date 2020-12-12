@@ -4,12 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Entity
 @Table(name = "downloads")
 @Access(AccessType.FIELD)
@@ -61,24 +64,35 @@ public class Download implements Serializable {
     @Column(name = "failed_times")
     private int failedTimes;
 
-    public Download markDownloaded(String content) {
-        if (this.status != DownloadStatus.DOWNLOADING) {
-            throw new IllegalStateException("Previous status must be " + DownloadStatus.DOWNLOADING);
+    public Optional<Download> markDownloaded(String content) {
+        if (this.status == DownloadStatus.DOWNLOADING) {
+            this.status = DownloadStatus.DOWNLOADED;
+            this.content = content;
+            this.downloadedDate = LocalDateTime.now();
+            return Optional.of(this);
         }
-        this.status = DownloadStatus.DOWNLOADED;
-        this.content = content;
-        this.downloadedDate = LocalDateTime.now();
-        return this;
+        log.error("Previous status must be: {}", DownloadStatus.DOWNLOADING);
+        return Optional.empty();
     }
 
-    public Download markFailed() {
-        if (this.status != DownloadStatus.DOWNLOADING) {
-            throw new IllegalStateException("Previous status must be " + DownloadStatus.DOWNLOADING);
+    public Optional<Download> markFailed() {
+        if (this.status == DownloadStatus.DOWNLOADING) {
+            this.status = DownloadStatus.FAILED;
+            this.failedDate = LocalDateTime.now();
+            this.failedTimes += 1;
+            return Optional.of(this);
         }
-        this.status = DownloadStatus.FAILED;
-        this.failedDate = LocalDateTime.now();
-        this.failedTimes += 1;
-        return this;
+        log.error("Previous status must be: {}", DownloadStatus.DOWNLOADING);
+        return Optional.empty();
+    }
+
+    public Optional<Download> retry() {
+        if (this.status == DownloadStatus.FAILED) {
+            this.status = DownloadStatus.DOWNLOADING;
+            return Optional.of(this);
+        }
+        log.debug("Previous Download State must be: {}", DownloadStatus.FAILED);
+        return Optional.empty();
     }
 
     public enum DownloadStatus {

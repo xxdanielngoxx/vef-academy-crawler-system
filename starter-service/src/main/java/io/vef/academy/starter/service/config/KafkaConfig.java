@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.KafkaAdmin;
+import topics.DownloadServiceTopic;
 import topics.TrackingTopic;
 import topics.UrlManagerTopic;
 
@@ -32,7 +33,6 @@ public class KafkaConfig {
     public NewTopic urlManageTopic() {
         return TopicBuilder.name(UrlManagerTopic.URLS)
                             .partitions(3)
-                            .replicas(3)
                             .compact()
                             .build();
     }
@@ -41,8 +41,15 @@ public class KafkaConfig {
     public NewTopic trackingTopic() {
         return TopicBuilder.name(TrackingTopic.TRACKING)
                             .partitions(3)
-                            .replicas(3)
                             .compact()
                             .build();
+    }
+
+    @Bean
+    public NewTopic downloadTopic() {
+        return TopicBuilder.name(DownloadServiceTopic.DOWNLOADS)
+                .partitions(3)
+                .compact()
+                .build();
     }
 }

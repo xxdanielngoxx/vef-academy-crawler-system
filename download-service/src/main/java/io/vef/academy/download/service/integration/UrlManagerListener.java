@@ -1,6 +1,7 @@
 package io.vef.academy.download.service.integration;
 
 import io.vef.academy.common.events.UrlDispatchedEvent;
+import io.vef.academy.common.events.UrlDownloadRetriedEvent;
 import io.vef.academy.download.service.services.DownloadService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaHandler;
@@ -25,14 +26,16 @@ public class UrlManagerListener {
     }
 
     @KafkaHandler
-    public void on(UrlDispatchedEvent urlDispatchedEvent, Acknowledgment acknowledgment) {
+    public void on(UrlDispatchedEvent urlDispatchedEvent) {
         this.downloadService.downloadUrl(urlDispatchedEvent.getUrl(), urlDispatchedEvent.getTaskId());
+    }
+
+    public void on(UrlDownloadRetriedEvent event, Acknowledgment acknowledgment) {
         acknowledgment.acknowledge();
     }
 
-    @KafkaHandler
-    public void on(Object object, Acknowledgment acknowledgment) {
-        log.info("Received Message: {}", object);
-        acknowledgment.acknowledge();
+    @KafkaHandler(isDefault = true)
+    public void on(Object event) {
+        log.info("Received Message: {}", event);
     }
 }

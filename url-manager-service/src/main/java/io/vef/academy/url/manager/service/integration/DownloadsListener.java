@@ -13,7 +13,7 @@ import topics.DownloadServiceTopic;
 @Slf4j
 @Component
 @KafkaListener(
-        id = "url-manager-downloads-listener",
+        groupId = "url-manager-downloads-listener",
         topics = DownloadServiceTopic.DOWNLOADS,
         containerFactory = "downloadsKafkaListenerContainerFactory"
 )
@@ -26,19 +26,17 @@ public class DownloadsListener {
     }
 
     @KafkaHandler
-    public void on(UrlDownloadSucceedEvent event, Acknowledgment acknowledgment) {
+    public void on(UrlDownloadSucceedEvent event) {
         this.urlService.handleDownloadSucceed(event);
-        acknowledgment.acknowledge();
     }
 
-    public void on(UrlDownloadFailedEvent event, Acknowledgment acknowledgment) {
+    @KafkaHandler
+    public void on(UrlDownloadFailedEvent event) {
         this.urlService.handleDownloadFailedEvent(event);
-        acknowledgment.acknowledge();
     }
 
     @KafkaHandler(isDefault = true)
-    public void on(Object event, Acknowledgment acknowledgment) {
+    public void on(Object event) {
         log.info("Default event handler, event: {}", event);
-        acknowledgment.acknowledge();
     }
 }

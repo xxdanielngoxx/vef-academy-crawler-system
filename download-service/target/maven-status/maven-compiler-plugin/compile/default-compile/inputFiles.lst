@@ -7,5 +7,6 @@ D:\vef_academy\projects\project1\vef-crawler\download-service\src\main\java\io\v
 D:\vef_academy\projects\project1\vef-crawler\download-service\src\main\java\io\vef\academy\download\service\config\DownloadWorkerConfig.java
 D:\vef_academy\projects\project1\vef-crawler\download-service\src\main\java\io\vef\academy\download\service\integration\UrlManagerListener.java
 D:\vef_academy\projects\project1\vef-crawler\download-service\src\main\java\io\vef\academy\download\service\services\DownloadServiceImpl.java
+D:\vef_academy\projects\project1\vef-crawler\download-service\src\main\java\io\vef\academy\download\service\controllers\DownloadController.java
 D:\vef_academy\projects\project1\vef-crawler\download-service\src\main\java\io\vef\academy\download\service\services\DownloadService.java
 D:\vef_academy\projects\project1\vef-crawler\download-service\src\main\java\io\vef\academy\download\service\utils\DownloadWorkerImpl.java

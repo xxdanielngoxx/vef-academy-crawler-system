@@ -1,10 +1,13 @@
 D:\vef_academy\projects\project1\vef-crawler\common\src\main\java\io\vef\academy\common\events\UrlDispatchedEvent.java
+D:\vef_academy\projects\project1\vef-crawler\common\src\main\java\io\vef\academy\common\events\Event.java
+D:\vef_academy\projects\project1\vef-crawler\common\src\main\java\io\vef\academy\common\events\UrlDownloadFailedEvent.java
+D:\vef_academy\projects\project1\vef-crawler\common\src\main\java\io\vef\academy\common\events\UrlDownloadRetriedEvent.java
+D:\vef_academy\projects\project1\vef-crawler\common\src\main\java\io\vef\academy\common\events\TaskExecutedEvent.java
+D:\vef_academy\projects\project1\vef-crawler\common\src\main\java\seed\SeedUrl.java
 D:\vef_academy\projects\project1\vef-crawler\common\src\main\java\io\vef\academy\common\events\Metadata.java
 D:\vef_academy\projects\project1\vef-crawler\common\src\main\java\topics\DownloadServiceTopic.java
-D:\vef_academy\projects\project1\vef-crawler\common\src\main\java\io\vef\academy\common\events\UrlDownloadFailedEvent.java
 D:\vef_academy\projects\project1\vef-crawler\common\src\main\java\topics\UrlManagerTopic.java
 D:\vef_academy\projects\project1\vef-crawler\common\src\main\java\io\vef\academy\common\events\UrlDownloadSucceedEvent.java
 D:\vef_academy\projects\project1\vef-crawler\common\src\main\java\topics\TrackingTopic.java
-D:\vef_academy\projects\project1\vef-crawler\common\src\main\java\io\vef\academy\common\events\TaskExecutedEvent.java
 D:\vef_academy\projects\project1\vef-crawler\common\src\main\java\io\vef\academy\common\events\UrlDownloadedEvent.java
-D:\vef_academy\projects\project1\vef-crawler\common\src\main\java\seed\SeedUrl.java
+D:\vef_academy\projects\project1\vef-crawler\common\src\main\java\responses\DownloadedContentResponse.java

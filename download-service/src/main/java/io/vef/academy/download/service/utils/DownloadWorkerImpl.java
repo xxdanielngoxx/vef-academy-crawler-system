@@ -45,52 +45,47 @@ public class DownloadWorkerImpl implements DownloadWorker {
                 log.error("Download Failed {url: {}}, caused: {}", url, e.getCause());
                 return Optional.empty();
             }
-        }, taskExecutor).thenApplyAsync(result -> {
-           if (result.isPresent()) {
-               Download downloaded = this.saveContentAndPublishEventWhenSuccesses(
-                       id,
-                       url,
-                       taskId,
-                       (String)  result.get()
-               );
-               return Optional.of(downloaded);
-           } else {
-              Download failed = this.markDownloadFailedAndPublishEventWhenFailed(id, url, taskId);
-              return Optional.of(failed);
-           }
-        }, taskExecutor);
+        }, taskExecutor)
+                .thenApplyAsync(
+                        result -> result
+                                .map(content -> this.saveContentAndPublishEventWhenSuccesses(id, url, taskId, (String) content))
+                                .orElseGet(() -> this.markDownloadFailedAndPublishEventWhenFailed(id, url, taskId)), taskExecutor);
     }
 
     @Transactional
-    private Download saveContentAndPublishEventWhenSuccesses(String id, String url, String taskId, String content) {
+    private Optional<Download> saveContentAndPublishEventWhenSuccesses(String id, String url, String taskId, String content) {
         Optional<Download> optionalDownload = this.downloadRepository.findById(id);
         if (optionalDownload.isPresent()) {
             Download downloading = optionalDownload.get();
-            Download downloaded = downloading.markDownloaded(content);
-            Download updatedDownload = this.downloadRepository.save(downloaded);
-            this.kafkaTemplate.send(
-                    DownloadServiceTopic.DOWNLOADS,
-                    url,
-                    UrlDownloadSucceedEvent.of(id, url, taskId)
-            );
-            return updatedDownload;
+            Optional<Download> targetDownload = downloading.markDownloaded(content);
+            if (targetDownload.isPresent()) {
+                Download updatedDownload = this.downloadRepository.save(targetDownload.get());
+                this.kafkaTemplate.send(
+                        DownloadServiceTopic.DOWNLOADS,
+                        url,
+                        UrlDownloadSucceedEvent.of(id, url, taskId)
+                );
+            }
+            return targetDownload;
         }
         throw new EntityNotFoundException("Not found Download entity with id: " + id);
     }
 
     @Transactional
-    private Download markDownloadFailedAndPublishEventWhenFailed(String id, String url, String taskId) {
+    private Optional<Download> markDownloadFailedAndPublishEventWhenFailed(String id, String url, String taskId) {
         Optional<Download> optionalDownload = this.downloadRepository.findById(id);
         if (optionalDownload.isPresent()) {
             Download downloading = optionalDownload.get();
-            Download failed = downloading.markFailed();
-            Download updatedDownload = this.downloadRepository.save(failed);
-            this.kafkaTemplate.send(
-                    DownloadServiceTopic.DOWNLOADS,
-                    url,
-                    UrlDownloadFailedEvent.of(id, url, taskId, updatedDownload.getFailedTimes())
-            );
-            return updatedDownload;
+            Optional<Download> targetDownload = downloading.markFailed();
+            if (targetDownload.isPresent()) {
+                Download updatedDownload = this.downloadRepository.save(targetDownload.get());
+                this.kafkaTemplate.send(
+                        DownloadServiceTopic.DOWNLOADS,
+                        url,
+                        UrlDownloadFailedEvent.of(id, url, taskId, updatedDownload.getFailedTimes())
+                );
+            }
+            return targetDownload;
         }
         throw new EntityNotFoundException("Not found Download entity with id: " + id);
     }

@@ -11,7 +11,6 @@ io\vef\academy\url\manager\service\integration\TrackingListener.class
 io\vef\academy\url\manager\service\domain\UrlDownloadDetails.class
 io\vef\academy\url\manager\service\controllers\TestController.class
 io\vef\academy\url\manager\service\domain\UrlDownloadDetailsId.class
-io\vef\academy\url\manager\service\integration\KafkaIntegration.class
 io\vef\academy\url\manager\service\domain\UrlExtractDetailsId.class
 io\vef\academy\url\manager\service\repositories\UrlRepository.class
 io\vef\academy\url\manager\service\domain\UrlExtractDetails.class

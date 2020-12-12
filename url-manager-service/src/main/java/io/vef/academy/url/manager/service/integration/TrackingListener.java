@@ -12,7 +12,7 @@ import topics.TrackingTopic;
 @Slf4j
 @Component
 @KafkaListener(
-        id = "url-manager-tracking-listener",
+        groupId = "url-manager-tracking-listener",
         topics = TrackingTopic.TRACKING,
         containerFactory = "trackingKafkaListenerContainerFactory"
 )
@@ -25,15 +25,13 @@ public class TrackingListener {
     }
 
     @KafkaHandler
-    public void on(TaskExecutedEvent taskExecutedEvent, Acknowledgment acknowledgment) {
+    public void on(TaskExecutedEvent taskExecutedEvent) {
         log.info("TaskExecuted event: {}", taskExecutedEvent.toString());
         this.urlService.handleTaskExecuted(taskExecutedEvent);
-        acknowledgment.acknowledge();
     }
 
     @KafkaHandler(isDefault = true)
-    public void on(Object event, Acknowledgment acknowledgment) {
+    public void on(Object event) {
         log.info("Default event handler, event: {}", event);
-        acknowledgment.acknowledge();
     }
 }

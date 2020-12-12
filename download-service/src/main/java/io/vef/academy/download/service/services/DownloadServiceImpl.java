@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Slf4j
 @Component
-public class DownloadServiceImpl implements DownloadService{
+public class DownloadServiceImpl implements DownloadService {
 
     private final DownloadWorker downloadWorker;
 
@@ -20,6 +20,16 @@ public class DownloadServiceImpl implements DownloadService{
     public DownloadServiceImpl(DownloadWorker downloadWorker, DownloadRepository downloadRepository) {
         this.downloadWorker = downloadWorker;
         this.downloadRepository = downloadRepository;
+    }
+
+    @Override
+    public Download getDownloadById(String id) {
+        return this.downloadRepository
+                .findById(id)
+                .orElseThrow(() -> {
+                    log.error("Download not found by id: {}", id);
+                    return new RuntimeException("Download not found by id: " + id);
+                });
     }
 
     @Override
@@ -35,6 +45,21 @@ public class DownloadServiceImpl implements DownloadService{
             return Optional.of(downloading);
         }
         return Optional.empty();
+    }
+
+    @Override
+    public Optional<Download> retryDownloadUrl(String id) {
+        Download targetDownload = this.getDownloadById(id);
+        Optional<Download> retriedDownload = targetDownload.retry();
+        if (retriedDownload.isPresent()) {
+            Download persistedDownload = this.downloadRepository.save(retriedDownload.get());
+            this.downloadWorker.downloadContent(
+                    persistedDownload.getId(),
+                    persistedDownload.getUrl(),
+                    persistedDownload.getTaskId()
+            );
+        }
+        return retriedDownload;
     }
 
     @Transactional

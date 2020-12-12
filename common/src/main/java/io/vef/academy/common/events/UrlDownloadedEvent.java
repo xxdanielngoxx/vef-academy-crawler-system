@@ -4,11 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import seed.SeedUrl;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 
 @Getter
 @ToString
@@ -24,21 +23,21 @@ public class UrlDownloadedEvent implements Serializable {
 
     private String taskId;
 
-    private String contentId;
+    private String downloadedId;
 
-    private List<SeedUrl> seedUrlList;
+    private Set<String> seedIds;
 
     private Metadata metadata;
 
-    private UrlDownloadedEvent(String url, String taskId, String contentId, List<SeedUrl> seedUrlList) {
+    private UrlDownloadedEvent(String url, String taskId, String downloadedId, Set<String> seedIds) {
         this.url = url;
         this.taskId = taskId;
-        this.contentId = contentId;
-        this.seedUrlList = Collections.unmodifiableList(seedUrlList);
+        this.downloadedId = downloadedId;
+        this.seedIds = Collections.unmodifiableSet(seedIds);
         this.metadata = Metadata.of(FROM);
     }
 
-    public static UrlDownloadedEvent of(String url, String taskId, String contentId, List<SeedUrl> seedUrlList) {
+    public static UrlDownloadedEvent of(String url, String taskId, String contentId, Set<String> seedUrlList) {
         return new UrlDownloadedEvent(url, taskId,contentId, seedUrlList);
     }
 }

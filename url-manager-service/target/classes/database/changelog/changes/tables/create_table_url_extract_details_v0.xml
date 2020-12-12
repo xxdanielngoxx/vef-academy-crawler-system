@@ -40,5 +40,8 @@
                 referencedTableName="url_download_details"
                 referencedColumnNames="url, task_id"
         />
+        <createIndex tableName="url_extract_details" indexName="index_task_id_url_extract_details">
+            <column name="task_id"/>
+        </createIndex>
     </changeSet>
 </databaseChangeLog>

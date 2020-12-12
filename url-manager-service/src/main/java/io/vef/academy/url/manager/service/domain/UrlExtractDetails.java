@@ -29,11 +29,23 @@ public class UrlExtractDetails implements Serializable {
     @Column(name = "extracted_id")
     private String extractedId;
 
+    @Enumerated(EnumType.STRING)
+    private ExtractStatus status;
+
     @Column(name = "extracted_date")
     private LocalDateTime extractedDate;
 
     @Column(name = "failed_date")
     private LocalDateTime failedDate;
+
+    @JsonIgnore
+    @MapsId("urlDownloadDetailsId")
+    @JoinColumns({
+            @JoinColumn(name = "url", referencedColumnName = "url"),
+            @JoinColumn(name = "task_id", referencedColumnName = "task_id")
+    })
+    @ManyToOne
+    private UrlDownloadDetails urlDownloadDetails;
 
     @Version
     private int version;
@@ -70,18 +82,6 @@ public class UrlExtractDetails implements Serializable {
         this.failedDate = LocalDateTime.now();
         return this;
     }
-
-    @JsonIgnore
-    @MapsId("urlDownloadDetailsId")
-    @JoinColumns({
-            @JoinColumn(name = "url", referencedColumnName = "url"),
-            @JoinColumn(name = "task_id", referencedColumnName = "task_id")
-    })
-    @ManyToOne
-    private UrlDownloadDetails urlDownloadDetails;
-
-    @Enumerated(EnumType.STRING)
-    private ExtractStatus status;
 
     @Override
     public boolean equals(Object o) {

@@ -1,5 +1,6 @@
 io\vef\academy\download\service\services\DownloadService.class
 io\vef\academy\download\service\integration\UrlManagerListener.class
+io\vef\academy\download\service\controllers\DownloadController.class
 io\vef\academy\download\service\utils\DownloadWorker.class
 io\vef\academy\download\service\utils\DownloadWorkerImpl.class
 io\vef\academy\download\service\domain\Download.class
